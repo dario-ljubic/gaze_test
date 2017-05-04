@@ -83,7 +83,7 @@ private:
                 ("streamppm", po::value<string>(), "stream ppm files to arg. e.g. "
                                                    ">(ffmpeg -f image2pipe -vcodec ppm -r 30 -i - -r 30 -preset ultrafast out.mp4)")
                 ("dump-estimates", po::value<string>(), "dump estimated values to file")
-                ("ros-topic", po::value<string>(), "publish estimated values to ros topic")
+                ("publish", po::value<string>(), "publish estimated values to a ros topic")
                 ("mirror", "mirror output");
         po::options_description inputops("input options");
         inputops.add_options()
@@ -93,7 +93,7 @@ private:
                 ("port,p", po::value<string>(), "expect image on yarp port arg")
                 ("batch,b", po::value<string>(), "batch process image filenames from arg")
                 ("size", po::value<string>(), "request image size arg and scale if required")
-                //("ros,r", po::value<string>(), "publish estimated values to ros topic") //todo
+                ("subscribe", po::value<string>(), "subscribe to a ros topic to receive images")
                 ("fps", po::value<int>(), "request video with arg frames per second");
         po::options_description classifyopts("classification options");
         classifyopts.add_options()
@@ -124,7 +124,7 @@ private:
                 std::exit(0);
             }
             po::notify(options);
-            for (const auto& s : { "camera", "image", "video", "port", "batch"}) { // todo: if an input is ros node, add ros
+            for (const auto& s : { "camera", "image", "video", "port", "batch", "subscribe"}) {
                 if (options.count(s)) {
                     if (worker.inputType.empty()) {
                         worker.inputParam = options[s].as<string>();
@@ -162,7 +162,7 @@ private:
             copyCheckArg("dump-estimates", worker.dumpEstimates);
             copyCheckArg("horizontal-gaze-tolerance", worker.horizGazeTolerance);
             copyCheckArg("vertical-gaze-tolerance", worker.verticalGazeTolerance);
-            copyCheckArg("ros-topic", worker.rosTopic);
+            copyCheckArg("publish", worker.rosTopicPub);
             if (options.count("quiet")) worker.showstats = false;
             gui.setHorizGazeTolerance(worker.horizGazeTolerance);
             gui.setVerticalGazeTolerance(worker.verticalGazeTolerance);
@@ -219,9 +219,14 @@ int main(int argc, char** argv) {
         QObject::connect(&gazer, SIGNAL(finished()), &app, SLOT(quit()));
     }
 
-    if (optparser.options.count("ros-topic")) {
+    if (optparser.options.count("publish") || optparser.options.count("subscribe")) {
+        //todo: see is it necessary to have two nodes
         ros::init(argc, argv, "gazetool");
     }
+
+//    if (optparser.options.count("subscribe")) {
+//        ros::init(argc, argv, gazer.inputParam);
+//    }
 
     thread.start();
     app.exec();

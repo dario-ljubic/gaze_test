@@ -21,6 +21,8 @@ find_package(catkin REQUIRED COMPONENTS
 	roscpp
 	std_msgs
 	message_generation
+	image_transport
+	cv_bridge
 )
 
 ## System dependencies are found with CMake's conventions
@@ -122,7 +124,7 @@ generate_messages(
 catkin_package(
 	INCLUDE_DIRS include
 #	LIBRARIES gaze_test
-	CATKIN_DEPENDS message_runtime roscpp std_msgs
+	CATKIN_DEPENDS message_runtime roscpp std_msgs image_transport cv_bridge
  	DEPENDS system_lib OpenCV Boost Qt5Core Qt5Widgets Qt5OpenGL Qt5Gui
 )
 
@@ -180,8 +182,7 @@ CONFIGURE_FILE(gazetool.sh.in gaze_test.sh @ONLY)
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-#install(PROGRAMS ${CMAKE_BINARY_DIR}/gazetool.sh DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-#)
+install(PROGRAMS ${CMAKE_BINARY_DIR}/${PROJECT_NAME}/gaze_test.sh DESTINATION bin)
 
 ## Mark executables and/or libraries for installation
 # install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
@@ -206,7 +207,7 @@ install(FILES
 	DESTINATION share/gaze_test
 )
 
-INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/${PROJECT_NAME}/gaze_test.sh DESTINATION bin)
+#INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/${PROJECT_NAME}/gaze_test.sh DESTINATION bin)
 
 #############
 ## Testing ##

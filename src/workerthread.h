@@ -51,8 +51,7 @@ public:
     std::string estimateVerticalGaze;
     std::string estimateLid;
     std::string dumpEstimates;
-    std::string rosTopic;
-    // todo: adding a data or function member for ros subscriber! When android part is done.
+    std::string rosTopicPub;
 
     double limitFps = 0;
     double horizGazeTolerance = 5;

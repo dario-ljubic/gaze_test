@@ -93,9 +93,10 @@ std::unique_ptr<ImageProvider> WorkerThread::getImageProvider() {
         filenames.push_back(inputParam);
         imgProvider.reset(new BatchImageProvider(filenames));
     }
-    // todo: enable ros input via subscribing to a topic which has android video messages
-//    else if (inputType == "ros") {
-//        imgProvider.reset(new CvVideoImageProvider(boost::lexical_cast<int>(inputParam), inputSize, desiredFps)); }
+    // todo: enable user to set inputSize like in the CvVideoImageProvider
+    else if (inputType == "subscribe") {
+        imgProvider.reset(new RosSubscriber);
+    }
     else {
         throw runtime_error("invalid input type " + inputType);
     }
@@ -217,8 +218,15 @@ void WorkerThread::process() {
 
     emit statusmsg("Setting up detector threads...");
 
+    // definiram unique pointer koji pokazuje na klasu <ImageProvider>, pointer se zove imgProvider i da, tupavo je nazvano jer
+    // se pointer zove imgProvider, a clan klase ImageProvider koji je getimageprovider vratio se takoder zove imgProvider.
+    // To znaci da pointer imgProvider pokazuje na objekt klase ImageProvider sa svojstvima imgProvidera (ovog sto se vratio iz
+    // getImageProvider()).
     std::unique_ptr<ImageProvider> imgProvider(getImageProvider());
 
+    // std::move - ono na sto pokazuje imgProvider je sada u vlasnistvu nekog drugog pointera u toj faceworker funkciji
+    // imgProvider je nakon movea unisten, postaje prazan, a pokazivac unutar faceworkera sada posjeduje ono sto je bilo sadrzano u
+    // imgProvideru
     FaceDetectionWorker faceworker(std::move(imgProvider), threadcount);
     ShapeDetectionWorker shapeworker(faceworker.hypsqueue(), modelfile, max(1, threadcount/2));
     RegressionWorker regressionWorker(shapeworker.hypsqueue(), eoclearner, glearner, rglearner, rellearner, vglearner, max(1, threadcount));
@@ -256,8 +264,8 @@ void WorkerThread::process() {
     TemporalStats temporalStats;
 
     // if there is a topic provided, create a ROS publisher
-    if (!rosTopic.empty()){
-        publisher = RosPublisher(rosTopic);
+    if (!rosTopicPub.empty()){
+        publisher = RosPublisher(rosTopicPub);
         rospub = true;
     }
 
