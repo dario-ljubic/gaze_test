@@ -21,14 +21,12 @@ void RosSubscriber::Callback(const sensor_msgs::ImageConstPtr& msg)
 bool RosSubscriber::get(cv::Mat& frame){
     //todo:add some conditions if the topic is not created etc. (like in yarpsupport)
     ros::spinOnce();
-    if (cvImagePtr && ros::ok()) {
-        //http://answers.opencv.org/question/7682/copyto-and-clone-functions/
-        //http://stackoverflow.com/questions/184710/what-is-the-difference-between-a-deep-copy-and-a-shallow-copy
+    if (cvImagePtr && ros::ok()) { // todo: test if this causes any problems with running gazetool
         cv::Mat rgbframe(cvImagePtr->image);
         frame = rgbframe.clone();
         return true;
     }
-    //std::cout << "There is no cvImagePtr!" << std::endl;
+    ROS_ERROR("No input topic provided!");
     return false;
 }
 
